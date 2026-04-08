@@ -1,0 +1,157 @@
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  --primary-teal: #003333;
+  --text-dark: #1a1a1a;
+  --border: #d1d5db;
+}
+
+.main-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f0f4f4;
+  padding: 20px;
+}
+
+.split-container {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 600px;
+  background: white;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+
+/* Sisi Form */
+.form-side {
+  flex: 1;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-content { width: 100%; max-width: 320px; margin: 0 auto; }
+
+.login-title { font-size: 32px; font-weight: 700; margin-bottom: 30px; color: var(--text-dark); }
+
+.tab-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  background: #f3f4f6;
+  padding: 5px;
+  border-radius: 12px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  background: transparent;
+  color: #6b7280;
+}
+
+.tab-button.active { background: white; color: var(--text-dark); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+/* Input */
+.input-group { margin-bottom: 20px; }
+.input-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 14px;
+  color: #000000; /* Memastikan teks berwarna hitam */
+  background: white;
+}
+
+.form-input::placeholder { color: #9ca3af; }
+
+.submit-button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(to right, #002222, #004444);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+/* Sisi Gambar (Slideshow) */
+.image-side {
+  flex: 1;
+  position: relative;
+  background: var(--primary-teal);
+}
+
+.slide-img {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.slide-img.active { opacity: 1; }
+
+.overlay {
+  background: rgba(0, 51, 51, 0.6);
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 40px;
+}
+
+.logo-circle {
+  width: 120px; height: 120px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+  overflow: hidden;
+}
+
+.logo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trusted-text { font-size: 14px; opacity: 0.8; margin-top: auto; }
+
+.footer-link { text-align: center; margin-top: 20px; font-size: 13px; color: #6b7280; }
+.footer-link a { color: var(--text-dark); font-weight: 600; text-decoration: none; }
+
+@media (max-width: 768px) {
+  .image-side { display: none; } /* Sembunyikan gambar di HP */
+}

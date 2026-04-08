@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --primary-blue: #0066ff;
+  --bg-light: #f8fafd;
+  --text-main: #1a1d23;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --white: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --border-color: #334155;
+    --text-light: #cbd5e1;
+    --input-bg: #1e293b;
+  }
+}
+.footer {
+  background-color: #f8f9fa; /* Warna cerah untuk footer */
+  color: #333; /* Warna teks gelap */
+  text-align: center;
+  padding: 15px 0;
+  width: 100%;
+  margin-top: auto;
+  border-top: 1px solid #ddd;
+}
+
+body.dark-mode .footer {
+  background-color: #1f1f1f;
+  color: #eee;
+  border-top: 1px solid #333;
+}
