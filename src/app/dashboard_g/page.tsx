@@ -25,28 +25,6 @@ export default function Dashboard() {
       {/* 1. SIDEBAR OVERLAY (Untuk HP) */}
       {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
-      {/* 2. SIDEBAR */}
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <img src="/images/logo_tkp.png" alt="Logo" />
-            <span>E-Monitoring</span>
-          </div>
-          <button className="close-menu" onClick={closeSidebar}><FiX /></button>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <Link href="/dashboard" className="nav-item active" onClick={closeSidebar}><FiHome /> Dashboard</Link>
-          <Link href="/daftarKelas" className="nav-item" onClick={closeSidebar}><FiList /> Daftar Kelas</Link>
-          <Link href="/dashboard/absensi" className="nav-item" onClick={closeSidebar}><FiCheckSquare /> Absensi Murid</Link>
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link href="/login" className="logout-btn">
-            <FiLogOut /> Keluar
-          </Link>
-        </div>
-      </aside>
 
       {/* 3. MAIN CONTENT */}
       <main className="main-content">
