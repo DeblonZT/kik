@@ -1,80 +1,87 @@
 'use client';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ListChecks, Users, BookOpen, BarChart3,BookOpenText, School   } from 'lucide-react';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { 
-  FiMenu, 
-  FiX, 
-  FiHome, 
-  FiList, 
-  FiCheckSquare, 
-  FiLogOut, 
-  FiBell 
-} from 'react-icons/fi'; // Install dulu: npm install react-icons
-import './dashboard_g.css';
+export default function DashboardGuru() {
+  const router = useRouter();
 
-export default function Dashboard() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  useEffect(() => {
+    const session = localStorage.getItem('userSession');
+    if (!session) {
+      router.push('/'); 
+    }
+  }, [router]);
 
-  // Fungsi untuk menutup sidebar saat menu di HP diklik
-  const closeSidebar = () => setIsSidebarOpen(false);
+  const menuItems = [
+    {
+      title: 'Daftar Kelas',
+      desc: 'Lihat dan kelola data kelas Anda',
+      icon: <School  className="text-indigo-500" size={28} />,
+      bgColor: '#eef2ff',
+      path: '/dashboard_g/daftarKelas'
+    },
+    {
+      title: 'Absensi Murid',
+      desc: 'Mulai mengabsensi murid hari ini',
+      icon: <ListChecks className="text-emerald-500" size={28} />,
+      bgColor: '#ecfdf5',
+      path: '/dashboard_g/absensi'
+    },
+    {
+      title: 'Mata Pelajaran',
+      desc: 'Kelola mata pelajaran Anda',
+      icon: <BookOpenText className="text-blue-500" size={28} />,
+      bgColor: '#eff6ff',
+      path: '/dashboard_g/mapel'
+    },
+    {
+      title: 'Presentasi',
+      desc: 'Lihat presentasi dan statistik',
+      icon: <BarChart3 className="text-slate-500" size={28} />,
+      bgColor: '#f8fafc',
+      path: '/dashboard_g/presentasi'
+    }
+  ];
 
   return (
-    <div className="dashboard-wrapper">
-      
-      {/* 1. SIDEBAR OVERLAY (Untuk HP) */}
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
+    <div className="flex flex-col items-center justify-center min-h-[75vh]">
+      {/* Sapaan Tengah - Sesuai SS */}
+      <div className="text-center mb-16">
+        <h1 className="text-5xl font-bold text-slate-800 mb-4 tracking-tight">
+          Selamat Datang, Bapak/Ibu Guru!
+        </h1>
+        <p className="text-slate-500 text-xl font-medium">
+          Silakan pilih menu di bawah untuk memulai aktivitas.
+        </p>
+      </div>
 
-
-      {/* 3. MAIN CONTENT */}
-      <main className="main-content">
-        
-        {/* TOP NAVBAR */}
-        <header className="navbar">
-          <div className="navbar-left">
-            {/* Tombol Hamburger (Muncul hanya di HP) */}
-            <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-              <FiMenu />
-            </button>
-            <span className="navbar-title">Portal Guru</span>
-          </div>
-          <div className="user-info">
-            <div className="icon-badge"><FiBell /></div>
-            <div className="profile">
-              <div className="avatar">AD</div>
+      {/* Grid Shortcut - Ukuran Besar Identik Walas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+        {menuItems.map((item, idx) => (
+          <div
+            key={idx}
+            onClick={() => router.push(item.path)}
+            className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center gap-8"
+          >
+            {/* Box Icon Soft Color */}
+            <div 
+              className="w-20 h-20 rounded-3xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: item.bgColor }}
+            >
+              {item.icon}
+            </div>
+            
+            {/* Text Content */}
+            <div className="text-left">
+              <h3 className="text-2xl font-bold text-slate-800">{item.title}</h3>
+              <p className="text-slate-400 text-base mt-2 leading-relaxed">
+                {item.desc}
+              </p>
             </div>
           </div>
-        </header>
-
-        {/* CONTENT AREA (Hanya Welcome & Shortcut) */}
-        <div className="content-inner minimal-content">
-          
-          <div className="welcome-section">
-            <h1 className="welcome-heading">Selamat Datang, Bapak/Ibu Guru!</h1>
-            <p className="welcome-subheading">Silakan pilih menu di bawah untuk memulai aktivitas.</p>
-          </div>
-
-          {/* SHORTCUT GRID (Bumbu CSS Modern) */}
-          <div className="shortcut-grid">
-            <Link href="/daftarKelas" className="shortcut-card card-blue">
-              <div className="card-icon"><FiList /></div>
-              <div className="card-info">
-                <h3>Daftar Kelas</h3>
-                <p>Lihat dan kelola data kelas Anda</p>
-              </div>
-            </Link>
-
-            <Link href="/dashboard/absensi" className="shortcut-card card-green">
-              <div className="card-icon"><FiCheckSquare /></div>
-              <div className="card-info">
-                <h3>Absensi Murid</h3>
-                <p>Mulai mengabsensi murid hari ini</p>
-              </div>
-            </Link>
-          </div>
-
-        </div>
-      </main>
+        ))}
+      </div>
     </div>
   );
 }

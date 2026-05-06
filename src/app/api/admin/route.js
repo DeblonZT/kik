@@ -1,21 +1,25 @@
-import { createConnection } from "@/lib/db.js";
+import { supabase } from "@/lib/supabase.ts";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
     try {
         const { username, password } = await request.json();
-        const db = await createConnection();
         
-        // Cari admin berdasarkan username
-        const sql = "SELECT * FROM admin WHERE nama = ? AND pw = ?";
-        const [rows] = await db.execute(sql, [username, password]);
+        // Cari admin berdasarkan username dan password
+        const { data, error } = await supabase
+            .from('admin')
+            .select('*')
+            .eq('nama', username)
+            .eq('pw', password)
+            .single();
 
-        if (rows.length > 0) {
-            return NextResponse.json({ success: true, user: rows[0] }, { status: 200 });
-        } else {
+        if (error || !data) {
             return NextResponse.json({ success: false, message: "Username atau Password salah" }, { status: 401 });
         }
+
+        return NextResponse.json({ success: true, user: data }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('❌ Admin API Error:', error.message);
+        return NextResponse.json({ success: false, error: error.message, message: "Error saat login" }, { status: 500 });
     }
 }

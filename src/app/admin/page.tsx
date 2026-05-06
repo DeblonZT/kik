@@ -40,7 +40,7 @@ export default function AdminLogin() {
 
       const data = await res.json();
       if (data.success) {
-        router.push('/dashboard');
+        router.push('/admin/dashboard_a');
       } else {
         setError('Username atau Password Admin salah!');
       }
