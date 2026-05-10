@@ -1,5 +1,3 @@
-/* admin-login.css */
-
 :root {
   --primary-teal: #003333;
   --text-dark: #1a1a1a;
@@ -76,13 +74,13 @@
   background-size: cover;
   background-position: center;
   opacity: 0;
-  transition: opacity 0.8s ease-in-out; /* Transisi diperhalus */
+  transition: opacity 0.8s ease-in-out; /* transisi diperhalus */
 }
 
 .slide-img.active { opacity: 1; }
 
 .overlay {
-  position: absolute; /* Penting: agar menumpuk di atas slide-img */
+  position: absolute; /* agar menumpuk di atas slide-img */
   top: 0; left: 0;
   background: rgba(0, 51, 51, 0.6);
   width: 100%; height: 100%;
@@ -93,7 +91,7 @@
   color: white;
   text-align: center;
   padding: 40px;
-  z-index: 10; /* Di atas gambar */
+  z-index: 10; /* supaya berada di atas gambar */
 }
 
 .logo-circle {
@@ -109,7 +107,7 @@
 }
 
 .logo-circle img {
-  width: 65%; /* Logo diperkecil di dalam lingkaran */
+  width: 65%; /* logo diperkecil di dalam lingkaran */
   height: auto;
   object-fit: contain;
 }

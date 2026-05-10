@@ -11,91 +11,99 @@ export default function ProfileGuru() {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // useEffect ini HANYA jalan di Client setelah render pertama
   useEffect(() => {
     setMounted(true);
-    
     const session = localStorage.getItem('userSession');
+    
     if (!session) {
       router.push('/');
     } else {
-      setUserData(JSON.parse(session));
+      const parsedUser = JSON.parse(session);
+      // Panggil fungsi untuk ambil data terbaru dari DB
+      fetchLatestUserData(parsedUser);
     }
   }, []);
 
-  // Perbaikan fungsi hapus foto lama
-  const deleteOldPhoto = async (photoUrl: string) => {
-    if (!photoUrl) return;
-
-    // Cek apakah foto memang berasal dari storage Supabase kita
-    if (!photoUrl.includes('guru-photos')) return; 
-
+  // FUNGSI BARU: Ambil data terbaru dari Supabase agar sinkron
+  const fetchLatestUserData = async (sessionData: any) => {
     try {
-      // Ambil path setelah nama bucket
-      // URL format: https://.../storage/v1/object/public/guru-photos/guru/ID/file.jpg
-      const pathParts = photoUrl.split('/guru-photos/');
-      const filePath = pathParts[1]; // Ini akan mengambil 'guru/ID/file.jpg'
+      const tableTarget = sessionData.role === 'Walas' ? 'walas' : 'guru';
+      const idColumn = sessionData.role === 'Walas' ? 'walasId' : 'guruId';
 
+      const { data, error } = await supabase
+        .from(tableTarget)
+        .select('*')
+        .eq(idColumn, sessionData.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        // Gabungkan data sesi lama (role, id) dengan data terbaru dari DB (nip, email, foto_url)
+        const updatedData = {
+          ...sessionData,
+          nama: data.nama,
+          nip: data.nip,
+          email: data.email,
+          foto_url: data.foto_url
+        };
+        setUserData(updatedData);
+        // Update localStorage agar sinkron untuk penggunaan selanjutnya
+        localStorage.setItem('userSession', JSON.stringify(updatedData));
+      }
+    } catch (err) {
+      console.error("Gagal sinkronisasi data:", err);
+      // Jika gagal fetch, tetap tampilkan data dari session sebagai fallback
+      setUserData(sessionData);
+    }
+  };
+
+  const deleteOldPhoto = async (photoUrl: string) => {
+    if (!photoUrl || !photoUrl.includes('guru-photos')) return; 
+    try {
+      const pathParts = photoUrl.split('/guru-photos/');
+      const filePath = pathParts[1];
       if (filePath) {
-        await supabase.storage
-          .from('guru-photos')
-          .remove([filePath]);
-        console.log("Foto lama dihapus:", filePath);
+        await supabase.storage.from('guru-photos').remove([filePath]);
       }
     } catch (error) {
       console.error("Gagal hapus foto lama:", error);
     }
   };
 
-  // Fungsi untuk upload foto baru
   const handleUploadFoto = async (file: File) => {
     if (!file) return;
-
-    // Validasi tipe file
     if (!file.type.startsWith('image/')) {
       alert("Hanya file gambar yang diperbolehkan!");
       return;
     }
-
-    // Validasi ukuran file (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert("Ukuran file terlalu besar! Maksimal 5MB.");
       return;
     }
 
     setLoading(true);
-
     try {
-      // Hapus foto lama terlebih dahulu
       if (userData.foto_url) {
         await deleteOldPhoto(userData.foto_url);
       }
 
-      // Generate nama file unik dengan timestamp
       const timestamp = Date.now();
       const fileExt = file.name.split('.').pop();
       const fileName = `${userData.id}-${timestamp}.${fileExt}`;
       const filePath = `guru/${userData.id}/${fileName}`;
 
-      // Upload file baru ke Supabase Storage
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('guru-photos')
         .upload(filePath, file, { upsert: false });
 
-      if (uploadError) {
-        alert("Gagal upload foto: " + uploadError.message);
-        setLoading(false);
-        return;
-      }
+      if (uploadError) throw uploadError;
 
-      // Dapatkan public URL dari file yang baru di-upload
       const { data: publicUrlData } = supabase.storage
         .from('guru-photos')
         .getPublicUrl(filePath);
 
       const publicUrl = publicUrlData?.publicUrl;
-
-      // Update database dengan URL foto baru
       const tableTarget = userData.role === 'Walas' ? 'walas' : 'guru';
       const idColumn = userData.role === 'Walas' ? 'walasId' : 'guruId';
 
@@ -104,27 +112,18 @@ export default function ProfileGuru() {
         .update({ foto_url: publicUrl })
         .eq(idColumn, userData.id);
 
-      if (updateError) {
-        alert("Gagal menyimpan data: " + updateError.message);
-      } else {
-        const updated = { ...userData, foto_url: publicUrl };
-        setUserData(updated);
-        localStorage.setItem('userSession', JSON.stringify(updated));
-        alert("Foto profil berhasil diperbarui!");
-        
-        // Refresh halaman setelah 1 detik
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      }
+      if (updateError) throw updateError;
+
+      const updated = { ...userData, foto_url: publicUrl };
+      setUserData(updated);
+      localStorage.setItem('userSession', JSON.stringify(updated));
+      alert("Foto profil berhasil diperbarui!");
+      window.location.reload();
+      
     } catch (error: any) {
       alert("Error: " + error.message);
     } finally {
       setLoading(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -136,12 +135,11 @@ export default function ProfileGuru() {
       
       <div className="profile-card-large">
         <div className="profile-header-section">
-          {/* Bagian Foto */}
           <div className="avatar-upload-group">
             {userData.foto_url ? (
               <img src={userData.foto_url} alt="Profile" className="large-avatar" />
             ) : (
-              <div className="large-initial">{userData.nama.charAt(0)}</div>
+              <div className="large-initial">{userData.nama?.charAt(0) || '?'}</div>
             )}
             <input
               ref={fileInputRef}
@@ -174,15 +172,19 @@ export default function ProfileGuru() {
         <div className="profile-details-grid">
           <div className="detail-item">
             <label>NIP / Nomor Induk</label>
-            <p>{userData.nip || 'Belum diatur'}</p>
+            {/* Sekarang mengambil data terbaru dari database */}
+            <p style={{fontWeight: '700'}}>{userData.nip || 'Belum diatur'}</p>
           </div>
+          
           <div className="detail-item">
-            <label>Status Akun</label>
-            <p className="status-active">Aktif</p>
+            <label>ID Pengguna</label>
+            <p style={{fontWeight: '700', color: '#444'}}>#{userData.id}</p>
           </div>
+
           <div className="detail-item">
             <label>Email Terkait</label>
-            <p>{userData.email || '-'}</p>
+            {/* Sekarang mengambil data terbaru dari database */}
+            <p style={{fontWeight: '700'}}>{userData.email || '-'}</p>
           </div>
         </div>
       </div>

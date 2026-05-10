@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { FiCheckCircle, FiSave } from 'react-icons/fi';
+import { FiSave } from 'react-icons/fi';
 import './absensi.css';
 
 export default function AbsensiMurid() {
@@ -17,202 +17,169 @@ export default function AbsensiMurid() {
 
   useEffect(() => {
     setMounted(true);
-
     const session = localStorage.getItem('userSession');
     if (!session) {
-      alert("Sesi habis atau Anda belum login!");
       router.push('/');
       return;
     }
-    
     const parsedUser = JSON.parse(session);
     setUserData(parsedUser);
-
-    // Jalankan fetchSesi dengan ID dari user yang login
-    if (parsedUser.id) {
-      fetchSesi(parsedUser.id);
-    }
+    if (parsedUser.id) fetchSesi(parsedUser.id);
   }, [router]);
 
-  // Ambil daftar sesi yang tersedia hanya untuk guru yang sedang login
   async function fetchSesi(idGuru: number) {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('sesi')
       .select('*, kelas(nama_kelas), mapel(nama_mapel)')
-      .eq('guruId', idGuru) // Filter agar hanya muncul sesi milik guru ini
+      .eq('guruId', idGuru)
       .order('tanggal', { ascending: false });
-      
-    if (error) {
-      console.error("Error fetch sesi:", error.message);
-    } else {
-      setListSesi(data || []);
-    }
+    setListSesi(data || []);
   }
 
-  // Fungsi Snapshot: Terpanggil saat Sesi dipilih
- async function handleSesiChange(id: string) {
-  setSelectedSesi(id);
-  if (!id) {
-    setDataAbsensi([]); // Kosongkan tabel jika tidak ada sesi dipilih
-    return;
-  }
+  // FUNGSI SORTING MANDIRI
+  const sortDataSiswa = (array: any[]) => {
+    return [...array].sort((a, b) => {
+      const namaA = a.siswa?.nama_siswa?.toLowerCase() || "";
+      const namaB = b.siswa?.nama_siswa?.toLowerCase() || "";
+      return namaA.localeCompare(namaB);
+    });
+  };
 
-  setLoading(true);
-
-  // 1. Ambil data absensi yang sudah ada
-  let { data: existingAbsensi } = await supabase
-    .from('absensi')
-    .select('*, siswa(nama_siswa)')
-    .eq('sesiId', id);
-
-  if (existingAbsensi && existingAbsensi.length > 0) {
-    setDataAbsensi(existingAbsensi);
-  } else {
-    // 2. Jika KOSONG, lakukan SNAPSHOT
-    // Cari detail sesi dari list yang sudah di-load di awal
-   const sesiAktif = listSesi.find(s => String(s.sesiId).trim() === String(id).trim());
-
-    // CEK DISINI: Pastikan sesiAktif tidak undefined
-    if (!sesiAktif) {
-      console.error("Sesi tidak ditemukan di listSesi");
-      setLoading(false);
+  async function handleSesiChange(id: string) {
+    setSelectedSesi(id);
+    if (!id) {
+      setDataAbsensi([]);
       return;
     }
 
-    const { data: daftarSiswa } = await supabase
-      .from('siswa')
-      .select('*')
-      .eq('kelasId', sesiAktif.kelasId); // Sekarang aman mengakses kelasId
+    setLoading(true);
 
-    if (daftarSiswa && daftarSiswa.length > 0) {
-      const payload = daftarSiswa.map(s => ({
-        sesiId: id,
-        siswaId: s.siswaId,
-        status: 'Tanpa Keterangan'
-      }));
+    // 1. Ambil data absensi yang sudah ada
+    let { data: existingAbsensi } = await supabase
+      .from('absensi')
+      .select('*, siswa(nama_siswa)')
+      .eq('sesiId', id);
 
-      const { data: newAbsensi, error: insertError } = await supabase
-        .from('absensi')
-        .insert(payload)
-        .select('*, siswa(nama_siswa)');
-      
-      if (newAbsensi) setDataAbsensi(newAbsensi);
-      if (insertError) console.error("Gagal Snapshot:", insertError.message);
+    if (existingAbsensi && existingAbsensi.length > 0) {
+      // PAKSA SORTING A-Z
+      setDataAbsensi(sortDataSiswa(existingAbsensi));
     } else {
-      alert("Tidak ada siswa terdaftar di kelas ini.");
-      setDataAbsensi([]);
-    }
-  }
-  setLoading(false);
-}
+      // 2. Jika KOSONG, lakukan SNAPSHOT
+      const sesiAktif = listSesi.find(s => String(s.sesiId) === String(id));
+      if (!sesiAktif) {
+        setLoading(false);
+        return;
+      }
 
-  // Update status di state lokal sebelum disimpan ke database
+      const { data: daftarSiswa } = await supabase
+        .from('siswa')
+        .select('*')
+        .eq('kelasId', sesiAktif.kelasId);
+
+      if (daftarSiswa && daftarSiswa.length > 0) {
+        const payload = daftarSiswa.map(s => ({
+          sesiId: id,
+          siswaId: s.siswaId,
+          status: 'Tanpa Keterangan'
+        }));
+
+        const { error: insertError } = await supabase.from('absensi').insert(payload);
+        
+        if (!insertError) {
+          // Ambil ulang agar mendapatkan join nama_siswa untuk di-sort
+          const { data: freshData } = await supabase
+            .from('absensi')
+            .select('*, siswa(nama_siswa)')
+            .eq('sesiId', id);
+          
+          if (freshData) setDataAbsensi(sortDataSiswa(freshData));
+        }
+      }
+    }
+    setLoading(false);
+  }
+
   const updateStatusLokal = (absensiId: string, statusBaru: string) => {
     setDataAbsensi(prev => prev.map(item => 
       item.absensiId === absensiId ? { ...item, status: statusBaru } : item
     ));
   };
 
-  // Simpan semua perubahan ke Supabase
   const handleSimpanAbsensi = async () => {
     const promises = dataAbsensi.map(item => 
       supabase.from('absensi').update({ status: item.status }).eq('absensiId', item.absensiId)
     );
-    
     await Promise.all(promises);
     alert("Absensi berhasil disimpan!");
   };
 
-  // Jika belum mounted, tampilkan loading
-  if (!mounted) {
-    return <div className="page-content-inner"><p>Loading...</p></div>;
-  }
+  if (!mounted) return null;
 
   return (
-    <>
-      {!mounted ? (
-        <div className="page-content-inner"><p>Loading...</p></div>
-      ) : (
-        <div className="page-content-inner">
-          <h1 className="section-heading">Pelaksanaan Absensi</h1>
+    <div className="page-content-inner">
+      <h1 className="section-heading">Portal Guru - Input Absensi</h1>
 
-          {/* PILIH SESI */}
-          <div className="table-card" style={{ marginBottom: '1.5rem' }}>
-            <label>Pilih Sesi Pertemuan:</label>
-            <select   
-              className="filter-select" 
-              style={{ width: '100%', marginTop: '8px' }}
-              value={selectedSesi}
-              onChange={(e) => handleSesiChange(e.target.value)}
-            >
-              <option value="">-- Pilih Sesi (Kelas - Tanggal - Keterangan) --</option>
-              {listSesi.map(s => (
-                <option key={s.sesiId} value={s.sesiId}>
-                  {s.kelas?.nama_kelas || 'Tanpa Kelas'} | {s.tanggal} | {s.keterangan}
-                </option>
-              ))}
-            </select>
+      <div className="table-card" style={{ marginBottom: '1.5rem' }}>
+        <label>Pilih Sesi Pertemuan:</label>
+        <select 
+          className="filter-select" 
+          style={{ width: '100%', marginTop: '8px' }}
+          value={selectedSesi}
+          onChange={(e) => handleSesiChange(e.target.value)}
+        >
+          <option value="">-- Pilih Sesi --</option>
+          {listSesi.map(s => (
+            <option key={s.sesiId} value={s.sesiId}>
+              {s.kelas?.nama_kelas} | {s.tanggal} | {s.keterangan}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {selectedSesi && (
+        <div className="table-card">
+          <div className="header-with-btn">
+            <h3>Daftar Siswa</h3>
+            <button className="btn-primary" onClick={handleSimpanAbsensi}>
+              <FiSave /> Simpan Perubahan
+            </button>
           </div>
-
-          {selectedSesi && (
-            <>
-              {/* RINGKASAN STATISTIK */}
-              <div className="stat-grid">
-                <div className="stat-card">
-                  <p className="stat-label">Hadir</p>
-                  <p className="stat-value">{dataAbsensi.filter(a => a.status === 'Hadir').length}</p>
-                </div>
-                <div className="stat-card">
-                  <p className="stat-label">Izin/Sakit</p>
-                  <p className="stat-value">{dataAbsensi.filter(a => ['Izin', 'Sakit'].includes(a.status)).length}</p>
-                </div>
-                <div className="stat-card">
-                  <p className="stat-label">Tanpa Keterangan</p>
-                  <p className="stat-value text-red">{dataAbsensi.filter(a => a.status === 'Tanpa Keterangan').length}</p>
-                </div>
-              </div>
-
-              {/* TABEL ABSENSI */}
-              <div className="table-card">
-                <div className="header-with-btn">
-                  <h3>Daftar Siswa</h3>
-                  <button className="btn-primary" onClick={handleSimpanAbsensi}>
-                    <FiSave /> Simpan Absensi
-                  </button>
-                </div>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Nama Siswa</th>
-                      <th>Status Kehadiran</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dataAbsensi.map((item) => (
-                      <tr key={item.absensiId}>
-                        <td>{item.siswa?.nama_siswa}</td>
-                        <td>
-                          <select 
-                            className={`status-select ${item.status.replace(' ', '-').toLowerCase()}`}
-                            value={item.status}
-                            onChange={(e) => updateStatusLokal(item.absensiId, e.target.value)}
-                          >
-                            <option value="Tanpa Keterangan">Tanpa Keterangan</option>
-                            <option value="Hadir">Hadir</option>
-                            <option value="Izin">Izin</option>
-                            <option value="Sakit">Sakit</option>
-                            <option value="Alpa">Alpa</option>
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>NAMA SISWA</th>
+                <th style={{ textAlign: 'center' }}>STATUS KEHADIRAN</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={2}>Mengambil data...</td></tr>
+              ) : (
+                dataAbsensi.map((item) => (
+                  <tr key={item.absensiId}>
+                    <td style={{ fontWeight: '500', textTransform: 'uppercase' }}>
+                      {item.siswa?.nama_siswa}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <select 
+                        className={`status-select ${item.status.replace(/\s+/g, '-').toLowerCase()}`}
+                        value={item.status}
+                        onChange={(e) => updateStatusLokal(item.absensiId, e.target.value)}
+                      >
+                        <option value="Tanpa Keterangan">Tanpa Keterangan</option>
+                        <option value="Hadir">Hadir</option>
+                        <option value="Izin">Izin</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Alpa">Alpa</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       )}
-    </>
+    </div>
   );
 }

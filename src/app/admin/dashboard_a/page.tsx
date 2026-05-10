@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import styles from './dashboard_a.module.css';
 
@@ -10,6 +11,7 @@ const supabase = createClient(
 );
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [role, setRole] = useState<'guru' | 'walas'>('guru');
   const [loading, setLoading] = useState(false);
   const [dataList, setDataList] = useState<any[]>([]);
@@ -22,9 +24,13 @@ export default function AdminDashboard() {
     nip: '',
     email: '',
     pw: '',
-    foto_url: '',
     kelasId: '',
   });
+
+  const handleLogout = async () => {
+    await fetch('/api/admin', { method: 'DELETE' });
+    router.push('/admin');
+  };
 
   const fetchData = async () => {
     const tableName = role === 'guru' ? 'guru' : 'walas';
@@ -72,7 +78,6 @@ export default function AdminDashboard() {
       nip: item.nip || '',
       email: item.email || '',
       pw: item.pw || '',
-      foto_url: item.foto_url || '',
       kelasId: item.kelasId?.toString() || '',
     });
     setEditingId(role === 'guru' ? item.guruId : item.walasId);
@@ -82,7 +87,7 @@ export default function AdminDashboard() {
   const handleCloseEdit = () => {
     setShowEditModal(false);
     setEditingId(null);
-    setFormData({ nama: '', nip: '', email: '', pw: '', foto_url: '', kelasId: '' });
+    setFormData({ nama: '', nip: '', email: '', pw: '', kelasId: '' });
   };
 
   const handleDelete = async (id: number) => {
@@ -117,7 +122,6 @@ export default function AdminDashboard() {
       nip: formData.nip,
       email: formData.email,
       pw: formData.pw,
-      foto_url: formData.foto_url,
     };
 
     if (role === 'walas') {
@@ -155,7 +159,6 @@ export default function AdminDashboard() {
       nip: formData.nip,
       email: formData.email,
       pw: formData.pw,
-      foto_url: formData.foto_url,
     };
 
     // 2. HANYA tambahkan kelasId jika role-nya adalah walas
@@ -168,7 +171,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       setMessage({ text: `Berhasil mendaftarkan ${role}`, type: 'success' });
-      setFormData({ nama: '', nip: '', email: '', pw: '', foto_url: '', kelasId: '' });
+      setFormData({ nama: '', nip: '', email: '', pw: '', kelasId: '' });
       fetchData();
     } catch (err: any) {
       // Error "Could not find kelasId" tidak akan muncul lagi di sini
@@ -180,6 +183,18 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.container}>
+      {/* TOP BAR — di luar card */}
+      <div className={styles.topBar}>
+        <div className={styles.topBarTitle}>
+          <span className={styles.topBarBadge}>Admin Portal</span>
+          <h1 className={styles.topBarHeading}>Manajemen Akun</h1>
+          <p className={styles.topBarSub}>SMK Negeri 1 Cibinong</p>
+        </div>
+        <button onClick={handleLogout} className={styles.logoutBtn}>
+          ⎋ Logout
+        </button>
+      </div>
+
       <div className={styles.card}>
         <div className={styles.tabSelector}>
           <button className={role === 'guru' ? styles.activeTab : ''} onClick={() => setRole('guru')}>
@@ -221,10 +236,6 @@ export default function AdminDashboard() {
                 </select>
               </div>
             )}
-            <div className={`${styles.inputGroup} ${role === 'guru' ? styles.full : ''}`}>
-              <label>URL Foto</label>
-              <input name="foto_url" value={formData.foto_url} onChange={handleChange} />
-            </div>
           </div>
           <button type="submit" className={styles.saveButton} disabled={loading}>
             {loading ? 'Memproses...' : 'Simpan Akun'}
@@ -239,7 +250,6 @@ export default function AdminDashboard() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Foto</th>
                 <th>Nama</th>
                 <th>NIP</th>
                 <th>Email</th>
@@ -256,11 +266,7 @@ export default function AdminDashboard() {
                   return (
                     <tr key={uniqueKey}>
                       <td>
-                        {item.foto_url ? (
-                          <img src={item.foto_url} alt="profile" className={styles.tableAvatar} />
-                        ) : (
-                          <div className={styles.avatarInitials}>{getInitials(item.nama || 'User')}</div>
-                        )}
+                        <div className={styles.avatarInitials}>{getInitials(item.nama || 'User')}</div>
                       </td>
                       <td>{item.nama}</td>
                       <td>{item.nip}</td>
@@ -277,7 +283,7 @@ export default function AdminDashboard() {
                 })
               ) : (
                 <tr key="empty-row">
-                  <td colSpan={role === 'walas' ? 6 : 5} className={styles.emptyRow}>Belum ada data.</td>
+                  <td colSpan={role === 'walas' ? 5 : 4} className={styles.emptyRow}>Belum ada data.</td>
                 </tr>
               )}
             </tbody>
@@ -321,10 +327,6 @@ export default function AdminDashboard() {
                       </select>
                     </div>
                   )}
-                  <div className={`${styles.inputGroup} ${role === 'guru' ? styles.full : ''}`}>
-                    <label>URL Foto</label>
-                    <input name="foto_url" value={formData.foto_url} onChange={handleChange} />
-                  </div>
                 </div>
                 <div className={styles.modalActions}>
                   <button type="submit" className={styles.saveButton} disabled={loading}>

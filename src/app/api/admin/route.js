@@ -1,25 +1,44 @@
-import { supabase } from "@/lib/supabase.ts";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { getIronSession } from 'iron-session';
+import { createClient } from '@supabase/supabase-js';
+import { sessionOptions } from '@/lib/session';
 
-export async function POST(request) {
-    try {
-        const { username, password } = await request.json();
-        
-        // Cari admin berdasarkan username dan password
-        const { data, error } = await supabase
-            .from('admin')
-            .select('*')
-            .eq('nama', username)
-            .eq('pw', password)
-            .single();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
-        if (error || !data) {
-            return NextResponse.json({ success: false, message: "Username atau Password salah" }, { status: 401 });
-        }
+export async function POST(req) {
+  const { username, password } = await req.json();
 
-        return NextResponse.json({ success: true, user: data }, { status: 200 });
-    } catch (error) {
-        console.error('❌ Admin API Error:', error.message);
-        return NextResponse.json({ success: false, error: error.message, message: "Error saat login" }, { status: 500 });
+  try {
+    const { data, error } = await supabase
+      .from('admin')
+      .select('*')
+      .eq('nama', username)
+      .eq('pw', password)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ success: false }, { status: 401 });
     }
+
+    const res = NextResponse.json({ success: true });
+    const session = await getIronSession(req, res, sessionOptions);
+    session.isAdmin = true;
+    session.username = username;
+    await session.save();
+
+    return res;
+
+  } catch (err) {
+    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req) {
+  const res = NextResponse.json({ success: true });
+  const session = await getIronSession(req, res, sessionOptions);
+  session.destroy();
+  return res;
 }

@@ -1,147 +1,105 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  --primary: #4f46e5;
-  --bg-body: #f8fafc;
-  --bg-sidebar: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--text-main);
-  background-color: var(--bg-body);
-}
-
 .dashboard-wrapper {
   display: flex;
   min-height: 100vh;
-  background: var(--bg-body);
+  background-color: #f8fafc;
+  font-family: 'Inter', sans-serif;
 }
 
-/* --- SIDEBAR LOGIC --- */
 .sidebar {
   width: 260px;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  padding: 20px;
   position: fixed;
   height: 100vh;
+  transition: all 0.3s ease;
   z-index: 1000;
-  transition: transform 0.3s ease;
 }
 
 .sidebar-header {
+  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 40px;
 }
 
 .sidebar-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: var(--primary);
 }
 
 .sidebar-logo img {
-  width: 40px;
+  width: 40px; 
+  height: auto;
+}
+
+.sidebar-logo span {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .close-menu {
   display: none;
   background: none;
   border: none;
-  font-size: 20px;
-  color: var(--text-muted);
+  font-size: 1.5rem;
+  color: #64748b;
   cursor: pointer;
 }
 
 .sidebar-nav {
+  flex: 1;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 18px;
-  border-radius: 10px;
-  color: var(--text-muted);
+  padding: 0.75rem 1rem;
+  color: #64748b;
   text-decoration: none;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 0.95rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .nav-item:hover {
-  background: #f8fafc;
-  color: var(--primary);
+  background-color: #f1f5f9;
+  color: #4f46e5;
 }
 
 .nav-item.active {
-  background: #e0e7ff;
-  color: var(--primary);
-  font-weight: 600;
+  background-color: #eef2ff;
+  color: #4f46e5;
 }
 
 .sidebar-footer {
-  margin-top: auto;
-}
-
-.logout-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px;
-  background: #fff1f2;
-  color: #e11d48;
-  border: none;
-  border-radius: 10px;
-  text-decoration: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s;
-}
-
-.logout-btn:hover {
-  background: #ffe4e6;
+  padding: 1rem;
+  border-top: 1px solid #f1f5f9;
 }
 
 .main-content {
   flex: 1;
-  margin-left: 260px; /* Jarak untuk sidebar desktop */
-  width: calc(100% - 260px);
+  margin-left: 260px;
   display: flex;
   flex-direction: column;
 }
 
 .navbar {
   height: 70px;
-  background: white;
-  border-bottom: 1px solid var(--border);
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
-  box-shadow: var(--shadow-sm);
+  padding: 0 2rem;
   position: sticky;
   top: 0;
   z-index: 900;
@@ -150,259 +108,49 @@ body {
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 15px;
-}
-
-.navbar-title {
-  font-weight: 600;
-  color: var(--text-main);
-  font-size: 1.1rem;
+  gap: 1rem;
 }
 
 .menu-toggle {
   display: none;
   background: none;
   border: none;
-  font-size: 24px;
-  color: var(--text-main);
-  cursor: pointer;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  color: var(--text-muted);
-}
-
-.icon-badge {
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-}
-
-.icon-badge:hover {
-  color: var(--primary);
-}
-
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar {
-  width: 38px;
-  height: 38px;
-  background: var(--primary);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: bold;
-}
-
-.content-container {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 999;
-}
-
-/* --- RESPONSIVE MOBILE (Penting!) --- */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    left: 0;
-    width: 260px;
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-    box-shadow: var(--shadow-md);
-  }
-
-  .close-menu {
-    display: block;
-  }
-
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .menu-toggle {
-    display: block !important;
-  }
-
-  .navbar {
-    padding: 0 15px !important;
-    height: 60px;
-  }
-
-  .content-container {
-    padding: 1rem;
-  }
-
-  /* Grid yang tadinya menyamping jadi ke bawah */
-  .stat-grid,
-  .shortcut-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch !important;
-  }
-
-  .welcome-heading {
-    font-size: 2rem;
-  }
-}
-
-/* Utility classes untuk konten */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.shortcut-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25px;
-  width: 100%;
-  max-width: 900px;
-  margin-top: 2rem;
-}
-
-.shortcut-card {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 16px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.shortcut-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-md);
-}
-
-.shortcut-card::after {
-  content: '→';
-  position: absolute;
-  right: 30px;
   font-size: 1.5rem;
-  opacity: 0;
-  transition: 0.3s;
+  cursor: pointer;
 }
 
-.shortcut-card:hover::after {
-  opacity: 1;
-}
-
-.card-icon {
-  font-size: 2rem;
-  padding: 15px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.card-blue .card-icon {
-  background: #e0e7ff;
-  color: #4f46e5;
-}
-
-.card-green .card-icon {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.card-info h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 5px;
-}
-
-.card-info p {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-}
-
-/* Welcome Section */
-.welcome-section {
-  text-align: center;
-  margin-bottom: 50px;
-}
-
-.welcome-heading {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 15px;
-  line-height: 1.2;
-}
-
-.welcome-subheading {
+.navbar-title {
   font-size: 1.1rem;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: #475569;
 }
 
-/* Profile Dropdown Styles */
 .nav-right {
-  position: relative;
   display: flex;
   align-items: center;
 }
 
 .profile-wrapper {
+  position: relative;
+}
+
+.profile-trigger {
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 8px;
-  transition: 0.2s;
+  padding: 6px 12px;
+  border-radius: 99px;
+  transition: background 0.2s;
 }
 
-.profile-wrapper:hover {
-  background: #f1f5f9;
+.profile-trigger:hover {
+  background-color: #f1f5f9;
 }
 
 .profile-name {
+  font-size: 0.9rem;
   font-weight: 500;
-  color: var(--text-main);
-  font-size: 0.95rem;
+  color: #1e293b;
 }
 
 .profile-avatar {
@@ -410,132 +158,169 @@ body {
   height: 35px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #e2e8f0;
 }
 
 .profile-initial {
   width: 35px;
   height: 35px;
   border-radius: 50%;
-  background: var(--primary);
+  background-color: #4f46e5;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .profile-dropdown-box {
   position: absolute;
-  top: 50px;
+  top: calc(100% + 10px);
   right: 0;
+  width: 220px;
   background: white;
-  min-width: 160px;
-  padding: 15px;
   border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   border: 1px solid #e2e8f0;
-  z-index: 999;
-}
-
-.profile-dropdown-box p {
-  margin: 0 0 5px 0;
-  font-size: 0.9rem;
-  color: var(--text-main);
-}
-
-.profile-dropdown-box .role-text {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
-.profile-dropdown-box hr {
-  margin: 10px 0;
-  border: none;
-  border-top: 1px solid var(--border);
-}
-
-.profile-dropdown-box .logout-btn {
-  width: 100%;
-  padding: 8px;
-  background: #fee2e2;
-  color: #991b1b;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 10px;
-  transition: 0.2s;
-}
-
-.profile-dropdown-box .logout-btn:hover {
-  background: #fecaca;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 1rem;
   z-index: 1000;
 }
 
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+.profile-brief-info {
+  text-decoration: none;
+  display: block;
 }
 
-.form-group {
-  margin-bottom: 15px;
+.profile-brief-info p {
+  margin: 0;
+  color: #1e293b;
+}
+
+.profile-brief-info .role-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.logout-btn {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.form-group input {
-  padding: 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-family: inherit;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.modal-actions {
-  display: flex;
+  align-items: center;
   gap: 10px;
-  margin-top: 20px;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  cursor: pointer;
+  width: 100%;
 }
 
-.btn-save {
-  flex: 1;
-  background: #4f46e5;
-  color: white;
+.content-container {
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .menu-toggle, .close-menu { display: block; }
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+}
+
+/* Menghilangkan static indicator Next.js secara paksa */
+#nextjs6464-cms-unused {
+  display: none !important;
+}
+
+/* Selector umum untuk portal/indicator development */
+[data-nextjs-static-indicator], 
+[data-vercel-toolbar] {
+  display: none !important;
+  visibility: hidden !important;
+}
+/* Menghilangkan paksa indikator Next.js (Logo N) di pojok kiri bawah */
+div[data-nextjs-static-indicator],
+#nextjs-static-indicator,
+[data-vercel-toolbar],
+.nextjs-static-indicator-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+/* --- Penyesuaian Footer Sidebar --- */
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid #f1f5f9;
+  /* Tambahkan sedikit margin bawah agar tidak terlalu mepet dengan logo N */
+  padding-bottom: 1.5rem; 
+}
+
+.logout-container {
+  display: flex;
+  justify-content: flex-end; /* Mendorong tombol "Keluar" ke kanan */
+  width: 100%;
+}
+
+.logout-btn-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ef4444; /* Warna merah */
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #fee2e2; /* Background merah muda agar lebih terlihat */
   border: none;
-  padding: 10px;
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-btn-sidebar:hover {
+  background-color: #fca5a5;
+  transform: translateX(2px); /* Sedikit efek geser saat hover */
+}
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid #f1f5f9;
+  background-color: white;
+  position: relative;
+  z-index: 1010;
+}
+
+/* Dorong tombol ke sisi kanan sidebar */
+.logout-container-sidebar {
+  display: flex;
+  justify-content: flex-end; /* Memindahkannya ke kanan logo Next.js */
+  width: 100%;
+}
+
+.logout-btn-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: #fee2e2; /* Background merah muda */
+  color: #ef4444; /* Teks merah */
+  border: none;
+  border-radius: 8px;
   font-weight: 600;
-  transition: 0.2s;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.btn-save:hover {
-  background: #4338ca;
+.logout-btn-sidebar:hover {
+  background-color: #fca5a5;
+  transform: translateX(3px); /* Efek visual geser dikit saat di klik */
 }
-
-.profile-brief-info {
-  padding: 10px 0;
-}
-

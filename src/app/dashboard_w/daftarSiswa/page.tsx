@@ -40,13 +40,11 @@ export default function DaftarSiswa() {
     setLoading(false);
   };
 
-  // Fungsi Simpan (Tambah atau Edit)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!walasData?.kelasId) return;
 
     if (isEditMode && selectedId) {
-      // Logika Update
       const { error } = await supabase
         .from('siswa')
         .update({ nama_siswa: formData.nama_siswa, NIS: formData.NIS || null })
@@ -55,7 +53,6 @@ export default function DaftarSiswa() {
       if (error) alert("Gagal update: " + error.message);
       else alert("Data berhasil diperbarui!");
     } else {
-      // Logika Insert
       const { error } = await supabase
         .from('siswa')
         .insert([{ ...formData, kelasId: walasData.kelasId }]);
@@ -68,7 +65,6 @@ export default function DaftarSiswa() {
     fetchSiswa(walasData.kelasId);
   };
 
-  // Fungsi Hapus
   const handleHapus = async (id: number, nama: string) => {
     if (confirm(`Apakah Anda yakin ingin menghapus siswa "${nama}"?`)) {
       const { error } = await supabase.from('siswa').delete().eq('siswaId', id);
@@ -99,12 +95,12 @@ export default function DaftarSiswa() {
     <div className="page-content-inner">
       <div className="page-header">
         <div className="header-flex">
-          <div>
+          <div className="title-area">
             <h1 className="section-heading">Daftar Siswa Kelas {listSiswa[0]?.kelas?.nama_kelas || ''}</h1>
             <p className="section-subheading">Kelola data siswa binaan Anda.</p>
           </div>
           <button className="btn-tambah" onClick={() => setIsModalOpen(true)}>
-            <FiPlus /> Tambah Siswa
+            <FiPlus /> <span>Tambah Siswa</span>
           </button>
         </div>
       </div>
@@ -120,14 +116,16 @@ export default function DaftarSiswa() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="stats-badge"><FiUser /> Total: {filteredSiswa.length} Siswa</div>
+        <div className="stats-badge">
+          <FiUser /> <span>Total: {filteredSiswa.length} Siswa</span>
+        </div>
       </div>
 
       <div className="table-card">
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ width: '50px' }}>No.</th>
+              <th style={{ width: '60px' }}>No.</th>
               <th>Nama Siswa</th>
               <th>NIS</th>
               <th style={{ textAlign: 'center' }}>Aksi</th>
@@ -136,22 +134,26 @@ export default function DaftarSiswa() {
           <tbody>
             {loading ? (
               <tr><td colSpan={4} className="text-center">Memuat...</td></tr>
-            ) : filteredSiswa.map((s, index) => (
-              <tr key={s.siswaId}>
-                <td>{index + 1}</td>
-                <td className="font-bold">{s.nama_siswa}</td>
-                <td className="text-mono">{s.NIS || '-'}</td>
-                <td className="action-cell">
-                  <button className="btn-icon edit" onClick={() => openEditModal(s)}><FiEdit2 /></button>
-                  <button className="btn-icon delete" onClick={() => handleHapus(s.siswaId, s.nama_siswa)}><FiTrash2 /></button>
-                </td>
-              </tr>
-            ))}
+            ) : filteredSiswa.length > 0 ? (
+              filteredSiswa.map((s, index) => (
+                <tr key={s.siswaId}>
+                  <td data-label="No.">{index + 1}</td>
+                  <td data-label="Nama Siswa" className="font-bold">{s.nama_siswa}</td>
+                  <td data-label="NIS" className="text-mono">{s.NIS || '-'}</td>
+                  <td data-label="Aksi" className="action-cell">
+                    <button className="btn-icon edit" title="Edit" onClick={() => openEditModal(s)}><FiEdit2 /></button>
+                    <button className="btn-icon delete" title="Hapus" onClick={() => handleHapus(s.siswaId, s.nama_siswa)}><FiTrash2 /></button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan={4} className="text-center">Data siswa tidak ditemukan.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* MODAL (Tetap sama, hanya judul & tombol dinamis) */}
+      {/* MODAL */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -163,14 +165,16 @@ export default function DaftarSiswa() {
               <div className="form-group">
                 <label>Nama Lengkap</label>
                 <input 
-                  type="text" required value={formData.nama_siswa}
+                  type="text" required placeholder="Contoh: Ahmad Fajar"
+                  value={formData.nama_siswa}
                   onChange={(e) => setFormData({...formData, nama_siswa: e.target.value})}
                 />
               </div>
               <div className="form-group">
                 <label>NIS</label>
                 <input 
-                  type="number" value={formData.NIS}
+                  type="number" placeholder="Nomor Induk Siswa"
+                  value={formData.NIS}
                   onChange={(e) => setFormData({...formData, NIS: e.target.value})}
                 />
               </div>
