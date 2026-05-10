@@ -352,6 +352,26 @@
   letter-spacing: 0.02em;
 }
 
+.avatarCircle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  overflow: hidden;
+  position: relative;
+  background-size: cover;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .tableAvatar {
   width: 38px;
   height: 38px;
@@ -523,4 +543,102 @@
   .full { grid-column: span 1; }
   .topBarHeading { font-size: 20px; }
   .table th, .table td { padding: 10px 10px; }
+}
+
+.nameText {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.subText {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.badgeKelas {
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.table td {
+  padding: 12px 15px;
+  vertical-align: middle;
+}
+.avatarCircle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Modal Styling */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.formEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.formEdit input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.modalActions button:first-child {
+  background: #3b82f6;
+  color: white;
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+}
+
+.modalActions button:last-child {
+  background: #ef4444;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
 }
