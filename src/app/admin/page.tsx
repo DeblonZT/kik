@@ -13,6 +13,13 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    const session = localStorage.getItem('adminSession');
+    if (session) {
+      router.push('/admin/dashboard_a');
+    }
+  }, []);
+
   const images = [
     "https://images.pexels.com/videos/6790697/artisan-arts-and-crafts-at-work-business-6790697.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
     "https://images.pexels.com/photos/5691639/pexels-photo-5691639.jpeg?_gl=1*1e9nxk2*_ga*MTUxODg4NTIwNi4xNzcxOTkxMjg1*_ga_8JE65Q40S6*czE3NzE5OTEyODQkbzEkZzEkdDE3NzE5OTEzMjIkajIyJGwwJGgw",
@@ -39,10 +46,12 @@ export default function AdminLogin() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        router.push('/admin/dashboard_a');
+      if (res.ok && data.user) {
+        localStorage.setItem('adminSession', JSON.stringify(data.user));
+        alert('Selamat Datang, Admin!');
+        await router.push('/admin/dashboard_a');
       } else {
-        setError('Username atau Password Admin salah!');
+        setError(data.message || 'Username atau Password Admin salah!');
       }
     } catch (err) {
       setError('Gagal terhubung ke server');
