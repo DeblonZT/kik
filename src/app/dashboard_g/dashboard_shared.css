@@ -289,38 +289,87 @@ div[data-nextjs-static-indicator],
   background-color: #fca5a5;
   transform: translateX(2px); /* Sedikit efek geser saat hover */
 }
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 1rem;
-  border-top: 1px solid #f1f5f9;
-  background-color: white;
+/* Container Profil di Header */
+.user-profile {
   position: relative;
-  z-index: 1010;
-}
-
-/* Dorong tombol ke sisi kanan sidebar */
-.logout-container-sidebar {
-  display: flex;
-  justify-content: flex-end; /* Memindahkannya ke kanan logo Next.js */
-  width: 100%;
-}
-
-.logout-btn-sidebar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background-color: #fee2e2; /* Background merah muda */
-  color: #ef4444; /* Teks merah */
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
+  gap: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 6px 12px;
+  border-radius: 99px;
+  transition: background-color 0.2s ease;
 }
 
-.logout-btn-sidebar:hover {
-  background-color: #fca5a5;
-  transform: translateX(3px); /* Efek visual geser dikit saat di klik */
+.user-profile:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Warna abu-abu transparan di belakang nama dan PP */
+}
+
+/* Kotak Pop-up yang melayang */
+.profile-popup {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 180px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.popup-user-detail {
+  padding: 12px 15px;
+}
+
+.popup-user-detail strong {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
+
+.popup-user-detail p {
+  font-size: 12px;
+  color: #777;
+  margin: 0;
+}
+
+.popup-body hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 0;
+}
+
+/* Item di dalam pop-up */
+.popup-item {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  text-decoration: none;
+  color: #333;
+  font-size: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.popup-item:hover {
+  background-color: #f8fafc;
+  color: #04393e;
+}
+
+.btn-keluar {
+  color: #ef4444 !important;
+  border-top: 1px solid #eee;
+}
+
+/* Pastikan foto profil di header bulat sempurna */
+.user-avatar img, .user-avatar .initials {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
 }

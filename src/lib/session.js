@@ -1,9 +1,9 @@
-// src/lib/session.js
 export const sessionOptions = {
-  password: "pasti-kan-password-ini-minimal-32-karakter-panjangnya", 
-  cookieName: "absensi_admin_session",
+  password: process.env.SESSION_SECRET,
+  cookieName: 'admin-session',
   cookieOptions: {
-    // secure: true harus aktif jika menggunakan https (production)
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 60 * 60 * 8, // 8 jam
   },
 };

@@ -17,6 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -101,17 +102,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard_g" className={`nav-item ${pathname === '/dashboard_g' ? 'active' : ''}`} onClick={closeSidebar}>
             <FiHome /> Dashboard Guru
           </Link>
+          
           <Link href="/dashboard_g/daftarKelas" className={`nav-item ${pathname.includes('daftarKelas') ? 'active' : ''}`} onClick={closeSidebar}>
             <FiList /> Daftar Sesi
           </Link>
           <Link href="/dashboard_g/absensi" className={`nav-item ${pathname.includes('absensi') ? 'active' : ''}`} onClick={closeSidebar}>
-            <FiCheckSquare /> Input Absensi
+            <FiCheckSquare /> Absensi Murid
           </Link>
-          <Link href="/dashboard_g/mapel" className={`nav-item ${pathname.includes('mapel') ? 'active' : ''}`} onClick={closeSidebar}>
-            <FiBookOpen /> Mata Pelajaran
-          </Link>
+          
           <Link href="/dashboard_g/presentasi" className={`nav-item ${pathname.includes('presentasi') ? 'active' : ''}`} onClick={closeSidebar}>
-            <FiBarChart2 /> Presentasi Absensi
+            <FiBarChart2 /> Presentasi 
           </Link>
         </>
       );
@@ -159,29 +159,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="nav-right">
-            <div className="profile-wrapper" ref={dropdownRef}>
-              <div className="profile-trigger" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                <span className="profile-name">{userData?.nama || 'User'}</span>
-                {userData?.foto_url && userData?.foto_url !== "EMPTY" ? (
-                  <img src={userData.foto_url} className="profile-avatar" alt="User" />
-                ) : (
-                  <div className="profile-initial">{userData?.nama?.charAt(0).toUpperCase()}</div>
+            <div className="header-right">
+              <div className="user-profile" onClick={() => setShowPopup(!showPopup)}>
+                <span className="user-name">{userData?.nama}</span>
+                <div className="user-avatar">
+                  {userData?.foto_url && userData?.foto_url !== 'EMPTY' ? (
+                    <img src={userData.foto_url} alt="PP" />
+                  ) : (
+                    <div className="initials">{userData?.nama?.charAt(0)}</div>
+                  )}
+                </div>
+
+                {/* POP UP MENU - TAMBAHKAN LINK DI SINI */}
+                {showPopup && (
+                  <div className="profile-popup">
+                    <div className="popup-body">
+                      <div className="popup-user-detail">
+                        <strong>{userData?.nama}</strong>
+                        <p>{userData?.role}</p>
+                      </div>
+                      <hr />
+                      
+                      {/* LINK MENU PROFILE YANG KAMU MINTA */}
+                      <Link href="/dashboard_g/profile" className="popup-item" onClick={() => setShowPopup(false)}>
+                         👤 Edit Profil
+                      </Link>
+                      
+                      <button onClick={handleLogout} className="popup-item btn-keluar">
+                        <span className="icon-exit">🚪</span> Keluar
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
-              
-              {isDropdownOpen && (
-                <div className="profile-dropdown-box">
-                  <div className="profile-link">
-                    <p><strong>{userData?.nama}</strong></p>
-                    <p className="role-text">{userData?.role}</p>
-                  </div>
-                  <hr />
-                  {/* Memanggil handleLogout yang sama */}
-                  <button onClick={handleLogout} className="logout-btn">
-                    <FiLogOut /> Keluar
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </header>

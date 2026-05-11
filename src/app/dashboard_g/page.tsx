@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ListChecks, Users, BookOpen, BarChart3,BookOpenText, School   } from 'lucide-react';
+import { ListChecks, Users, BookOpen, BarChart3, BookOpenText, School } from 'lucide-react';
 
 export default function DashboardGuru() {
   const router = useRouter();
@@ -9,25 +9,11 @@ export default function DashboardGuru() {
   useEffect(() => {
     const session = localStorage.getItem('userSession');
     if (!session) {
-      router.push('/'); 
+      router.push('/');
     }
   }, [router]);
 
   const menuItems = [
-    {
-      title: 'Daftar Kelas',
-      desc: 'Lihat dan kelola data kelas Anda',
-      icon: <School  className="text-indigo-500" size={28} />,
-      bgColor: '#eef2ff',
-      path: '/dashboard_g/daftarKelas'
-    },
-    {
-      title: 'Absensi Murid',
-      desc: 'Mulai mengabsensi murid hari ini',
-      icon: <ListChecks className="text-emerald-500" size={28} />,
-      bgColor: '#ecfdf5',
-      path: '/dashboard_g/absensi'
-    },
     {
       title: 'Mata Pelajaran',
       desc: 'Kelola mata pelajaran Anda',
@@ -36,11 +22,27 @@ export default function DashboardGuru() {
       path: '/dashboard_g/mapel'
     },
     {
+      title: 'Daftar Sesi',
+      desc: 'Lihat dan kelola data kelas Anda',
+      icon: <School className="text-indigo-500" size={28} />,
+      bgColor: '#eef2ff',
+      path: '/dashboard_g/daftarKelas'
+    },
+
+
+    {
       title: 'Presentasi',
       desc: 'Lihat presentasi dan statistik',
       icon: <BarChart3 className="text-slate-500" size={28} />,
       bgColor: '#f8fafc',
       path: '/dashboard_g/presentasi'
+    },
+    {
+      title: 'Absensi Murid',
+      desc: 'Mulai mengabsensi murid hari ini',
+      icon: <ListChecks className="text-emerald-500" size={28} />,
+      bgColor: '#ecfdf5',
+      path: '/dashboard_g/absensi'
     }
   ];
 
@@ -65,13 +67,13 @@ export default function DashboardGuru() {
             className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center gap-8"
           >
             {/* Box Icon Soft Color */}
-            <div 
+            <div
               className="w-20 h-20 rounded-3xl flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: item.bgColor }}
             >
               {item.icon}
             </div>
-            
+
             {/* Text Content */}
             <div className="text-left">
               <h3 className="text-2xl font-bold text-slate-800">{item.title}</h3>

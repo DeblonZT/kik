@@ -1,224 +1,185 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { FiPlus, FiTrash2, FiSearch, FiX, FiEdit3 } from 'react-icons/fi'; // Tambah ikon Edit
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import './daftarKelas.css';
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default function DaftarSesi() {
-  const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
-  const [listSesi, setListSesi] = useState<any[]>([]);
-  const [listKelas, setListKelas] = useState<any[]>([]);
-  const [listMapel, setListMapel] = useState<any[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [currentSesiId, setCurrentSesiId] = useState<number | null>(null);
+  
+  const [sesiList, setSesiList] = useState<any[]>([]);
+  const [mapelList, setMapelList] = useState<any[]>([]);
+  const [kelasList, setKelasList] = useState<any[]>([]);
 
-  // --- STATE UNTUK EDIT ---
-  const [editId, setEditId] = useState<number | null>(null);
-
-  // --- STATE UNTUK FILTER ---
-  const [filterKelas, setFilterKelas] = useState('');
-  const [filterBulan, setFilterBulan] = useState('');
-  const [filterTahun, setFilterTahun] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // --- STATE UNTUK FORM MODAL ---
-  const [formKelas, setFormKelas] = useState('');
-  const [formTanggal, setFormTanggal] = useState('');
-  const [formKeterangan, setFormKeterangan] = useState('');
-  const [formMapel, setFormMapel] = useState('');
+  const [formData, setFormData] = useState({
+    kelasId: '',
+    mapelId: '',
+    keterangan: '',
+    tanggal: new Date().toISOString().split('T')[0]
+  });
 
   useEffect(() => {
-    setMounted(true);
-    const session = localStorage.getItem('userSession');
-    if (!session) {
-      router.push('/');
-      return;
+    fetchSesiData();
+    fetchDropdownData();
+  }, []);
+
+  const fetchDropdownData = async () => {
+    const { data: mapel } = await supabase.from('mapel').select('*');
+    const { data: kelas } = await supabase.from('kelas').select('*');
+    setMapelList(mapel || []);
+    setKelasList(kelas || []);
+  };
+
+  const fetchSesiData = async () => {
+    try {
+      const teacherSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+      const { data, error } = await supabase
+        .from('sesi')
+        .select(`
+          *,
+          kelas:kelasId (nama_kelas),
+          mapel:mapelId (nama_mapel)
+        `)
+        .eq('guruId', teacherSession.id) 
+        .order('sesiId', { ascending: false });
+
+      if (error) throw error;
+      setSesiList(data || []);
+    } catch (err: any) {
+      console.error(err.message);
     }
-    const parsedUser = JSON.parse(session);
-    setUserData(parsedUser);
-    
-    fetchInitialData(parsedUser.id);
-  }, [router]);
-
-  const fetchInitialData = async (guruId: number) => {
-    setLoading(true);
-    // Ambil data Kelas
-    const { data: kelasData } = await supabase.from('kelas').select('*');
-    if (kelasData) setListKelas(kelasData);
-    
-    // Ambil data Mapel khusus Guru ini
-    const { data: mapelData } = await supabase
-      .from('mapel')
-      .select('*')
-      .eq('guruId', guruId);
-    if (mapelData) setListMapel(mapelData);
-    
-    await fetchSesiData(guruId);
   };
 
-  const fetchSesiData = async (guruId?: number) => {
-    const idGuru = guruId || userData?.id;
-    if (!idGuru) return;
-
-    const { data, error } = await supabase
-      .from('sesi')
-      .select(`
-        *,
-        kelas (nama_kelas),
-        mapel (nama_mapel)
-      `)
-      .eq('guruId', idGuru)
-      .order('tanggal', { ascending: false });
-
-    if (!error) setListSesi(data || []);
-    setLoading(false);
+  const handleOpenEdit = (sesi: any) => {
+    setIsEdit(true);
+    setCurrentSesiId(sesi.sesiId);
+    setFormData({
+      kelasId: sesi.kelasId.toString(),
+      mapelId: sesi.mapelId.toString(),
+      keterangan: sesi.keterangan,
+      tanggal: sesi.tanggal
+    });
+    setShowModal(true);
   };
 
-  const handleHapusSesi = async (id: number) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus sesi ini? Semua data absensi terkait mungkin akan ikut terhapus.")) return;
-
-    const { error } = await supabase.from('sesi').delete().eq('sesiId', id);
-
-    if (error) {
-      alert("Gagal hapus: " + error.message);
-    } else {
-      alert("Sesi berhasil dihapus");
+  const handleDelete = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus sesi ini? Data absensi terkait juga akan terhapus.")) return;
+    
+    try {
+      // Karena ada foreign key, pastikan delete cascade aktif di supabase 
+      // atau hapus absensi dulu secara manual jika perlu.
+      const { error } = await supabase.from('sesi').delete().eq('sesiId', id);
+      if (error) throw error;
+      alert("Sesi dihapus!");
       fetchSesiData();
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
-  const openEditModal = (sesi: any) => {
-    setEditId(sesi.sesiId);
-    setFormKelas(sesi.kelasId.toString());
-    setFormMapel(sesi.mapelId.toString());
-    setFormTanggal(sesi.tanggal);
-    setFormKeterangan(sesi.keterangan || '');
-    setIsModalOpen(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const teacherSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+
+    try {
+      if (isEdit && currentSesiId) {
+        // LOGIKA EDIT
+        const { error } = await supabase
+          .from('sesi')
+          .update({
+            kelasId: parseInt(formData.kelasId),
+            mapelId: parseInt(formData.mapelId),
+            keterangan: formData.keterangan,
+            tanggal: formData.tanggal
+          })
+          .eq('sesiId', currentSesiId);
+        if (error) throw error;
+        alert("Sesi diperbarui!");
+      } else {
+        // LOGIKA TAMBAH BARU (Plus Snapshot)
+        const { data: newSesi, error: sesiError } = await supabase
+          .from('sesi')
+          .insert([{
+            kelasId: parseInt(formData.kelasId),
+            mapelId: parseInt(formData.mapelId),
+            keterangan: formData.keterangan || '-',
+            tanggal: formData.tanggal,
+            guruId: teacherSession.id 
+          }])
+          .select().single();
+
+        if (sesiError) throw sesiError;
+
+        const { data: siswaList } = await supabase.from('siswa').select('siswaId').eq('kelasId', formData.kelasId);
+        if (siswaList && siswaList.length > 0) {
+          const payload = siswaList.map(s => ({
+            sesiId: newSesi.sesiId,
+            siswaId: s.siswaId,
+            status: 'Tanpa Keterangan'
+          }));
+          await supabase.from('absensi').insert(payload);
+        }
+        alert("Sesi & Snapshot Berhasil!");
+      }
+
+      setShowModal(false);
+      resetForm();
+      fetchSesiData();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
-    setEditId(null);
-    setFormKelas('');
-    setFormMapel('');
-    setFormTanggal('');
-    setFormKeterangan('');
-    setIsModalOpen(false);
+    setIsEdit(false);
+    setCurrentSesiId(null);
+    setFormData({
+      kelasId: '',
+      mapelId: '',
+      keterangan: '',
+      tanggal: new Date().toISOString().split('T')[0]
+    });
   };
-
-  const handleSimpanSesi = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const payload = { 
-      kelasId: parseInt(formKelas),
-      mapelId: parseInt(formMapel),
-      tanggal: formTanggal, 
-      keterangan: formKeterangan,
-      guruId: userData.id
-    };
-
-    let error;
-    if (editId) {
-      // Logika Update
-      const { error: err } = await supabase.from('sesi').update(payload).eq('sesiId', editId);
-      error = err;
-    } else {
-      // Logika Insert
-      const { error: err } = await supabase.from('sesi').insert([payload]);
-      error = err;
-    }
-
-    if (error) {
-      alert("Gagal menyimpan: " + error.message);
-    } else {
-      alert(editId ? "Sesi berhasil diperbarui!" : "Sesi berhasil dibuat!");
-      resetForm();
-      fetchSesiData();
-    }
-  };
-
-  const dataFiltered = listSesi.filter((item) => {
-    const tgl = new Date(item.tanggal);
-    const matchKelas = filterKelas ? item.kelasId.toString() === filterKelas : true;
-    const matchBulan = filterBulan ? (tgl.getMonth() + 1).toString() === filterBulan : true;
-    const matchTahun = filterTahun ? tgl.getFullYear().toString() === filterTahun : true;
-    const matchSearch = item.keterangan?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchKelas && matchBulan && matchTahun && matchSearch;
-  });
-
-  if (!mounted) return <div className="page-content-inner"><p>Loading...</p></div>;
 
   return (
-    <div className="page-content-inner">
-      <h1 className="section-heading">Daftar Sesi Absensi</h1>
-
-      <div className="toolbar-container">
-        <div className="filters-group">
-          <select className="filter-select" value={filterKelas} onChange={(e) => setFilterKelas(e.target.value)}>
-            <option value="">Semua Kelas</option>
-            {listKelas.map(k => <option key={k.kelasId} value={k.kelasId}>{k.nama_kelas}</option>)}
-          </select>
-
-          <select className="filter-select" value={filterBulan} onChange={(e) => setFilterBulan(e.target.value)}>
-            <option value="">Semua Bulan</option>
-            {["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"].map((m, i) => (
-              <option key={i} value={(i + 1).toString()}>{m}</option>
-            ))}
-          </select>
-
-          <select className="filter-select" value={filterTahun} onChange={(e) => setFilterTahun(e.target.value)}>
-            <option value="">Semua Tahun</option>
-            {[2024, 2025, 2026].map(y => <option key={y} value={y.toString()}>{y}</option>)}
-          </select>
-
-          <div className="search-wrapper">
-            <FiSearch className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Cari keterangan..." 
-              className="search-box"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <button className="btn-primary" onClick={() => { resetForm(); setIsModalOpen(true); }}>
-          <FiPlus /> Buat Sesi
-        </button>
+    <div className="container">
+      <div className="header-page">
+        <h2><b>Daftar Sesi Pembelajaran</b></h2>
+        <button className="btn-add" onClick={() => { resetForm(); setShowModal(true); }}>+ Tambah Sesi</button>
       </div>
 
-      <div className="table-card">
-        <table className="data-table">
+      <div className="table-container">
+        <table>
           <thead>
             <tr>
-              <th>Kelas</th>
-              <th>Mata Pelajaran</th>
               <th>Tanggal</th>
+              <th>Kelas</th>
+              <th>Mapel</th>
               <th>Keterangan</th>
-              <th style={{textAlign: 'center'}}>Aksi</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td colSpan={5} style={{textAlign: 'center', padding: '2rem'}}>Memuat data...</td></tr>
-            ) : dataFiltered.map((s) => (
+            {sesiList.map((s) => (
               <tr key={s.sesiId}>
-                <td className="col-kelas" style={{fontWeight: 'bold'}}>{s.kelas?.nama_kelas || 'N/A'}</td>
-                <td>{s.mapel?.nama_mapel || '-'}</td>
-                <td>{new Date(s.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
-                <td>{s.keterangan || '-'}</td>
-                <td>
-                  <div style={{display: 'flex', gap: '10px', justifyContent: 'center'}}>
-                    <button className="btn-edit" onClick={() => openEditModal(s)} title="Edit Sesi">
-                      <FiEdit3 />
-                    </button>
-                    <button className="btn-delete" onClick={() => handleHapusSesi(s.sesiId)} title="Hapus Sesi">
-                      <FiTrash2 />
-                    </button>
-                  </div>
+                <td>{s.tanggal}</td>
+                <td>{s.kelas?.nama_kelas}</td>
+                <td>{s.mapel?.nama_mapel}</td>
+                <td>{s.keterangan}</td>
+                <td className="action-btns">
+                  <button className="btn-edit" onClick={() => handleOpenEdit(s)}>Edit</button>
+                  <button className="btn-delete" onClick={() => handleDelete(s.sesiId)}>Hapus</button>
                 </td>
               </tr>
             ))}
@@ -226,40 +187,38 @@ export default function DaftarSesi() {
         </table>
       </div>
 
-      {isModalOpen && (
+      {showModal && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-card">
             <div className="modal-header">
-              <h2>{editId ? 'Edit Sesi Absensi' : 'Tambah Sesi Baru'}</h2>
-              <button onClick={resetForm}><FiX /></button>
+              <h3>{isEdit ? 'Edit Sesi' : 'Buat Sesi Baru'}</h3>
+              <button onClick={() => setShowModal(false)}>✕</button>
             </div>
-            <form onSubmit={handleSimpanSesi}>
+            <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Pilih Kelas</label>
-                <select value={formKelas} onChange={(e) => setFormKelas(e.target.value)} required>
-                  <option value="">-- Pilih --</option>
-                  {listKelas.map(k => <option key={k.kelasId} value={k.kelasId}>{k.nama_kelas}</option>)}
+                <label>Kelas</label>
+                <select required value={formData.kelasId} onChange={(e) => setFormData({...formData, kelasId: e.target.value})}>
+                  <option value="">Pilih Kelas</option>
+                  {kelasList.map(k => <option key={k.kelasId} value={k.kelasId}>{k.nama_kelas}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Pilih Mata Pelajaran</label>
-                <select value={formMapel} onChange={(e) => setFormMapel(e.target.value)} required>
-                  <option value="">-- Pilih Mapel --</option>
-                  {listMapel.map(m => (
-                    <option key={m.mapelId} value={m.mapelId}>{m.nama_mapel}</option>
-                  ))}
+                <label>Mapel</label>
+                <select required value={formData.mapelId} onChange={(e) => setFormData({...formData, mapelId: e.target.value})}>
+                  <option value="">Pilih Mapel</option>
+                  {mapelList.map(m => <option key={m.mapelId} value={m.mapelId}>{m.nama_mapel}</option>)}
                 </select>
               </div>
               <div className="form-group">
                 <label>Tanggal</label>
-                <input type="date" value={formTanggal} onChange={(e) => setFormTanggal(e.target.value)} required />
+                <input type="date" required value={formData.tanggal} onChange={(e) => setFormData({...formData, tanggal: e.target.value})} />
               </div>
               <div className="form-group">
                 <label>Keterangan</label>
-                <input type="text" value={formKeterangan} onChange={(e) => setFormKeterangan(e.target.value)} placeholder="Contoh: Pertemuan 1" />
+                <input type="text" value={formData.keterangan} onChange={(e) => setFormData({...formData, keterangan: e.target.value})} />
               </div>
-              <button type="submit" className="btn-primary w-full">
-                {editId ? 'Simpan Perubahan' : 'Simpan Sesi'}
+              <button type="submit" className="btn-save" disabled={loading}>
+                {loading ? 'Proses...' : isEdit ? 'Simpan Perubahan' : 'Tambah Sesi'}
               </button>
             </form>
           </div>
