@@ -178,7 +178,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                     <hr />
                     <Link href={profilePath} className="popup-item" onClick={() => setShowPopup(false)}>
-                      👤 Edit Profil
+                      👤 Profil
                     </Link>
                     <button onClick={handleLogout} className="popup-item btn-keluar">
                       🚪 Keluar

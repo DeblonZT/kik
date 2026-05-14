@@ -1,5 +1,6 @@
-/* walas.css - Disinkronkan dengan dashboard_shared.css */
-
+/* ==========================================================================
+   LAYOUT & SIDEBAR
+   ========================================================================== */
 .dashboard-wrapper {
   display: flex;
   min-height: 100vh;
@@ -7,7 +8,6 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* SIDEBAR STYLES */
 .sidebar {
   width: 260px;
   background-color: #ffffff;
@@ -16,7 +16,7 @@
   flex-direction: column;
   position: fixed;
   height: 100vh;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
 }
 
@@ -34,31 +34,24 @@
 }
 
 .sidebar-logo img {
-  width: 40px; /* Ukuran logo disesuaikan agar tidak kekecilan */
+  width: 35px;
   height: auto;
 }
 
 .sidebar-logo span {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1e293b;
+  letter-spacing: -0.5px;
 }
 
-.close-menu {
-  display: none; /* Hanya muncul di mobile */
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #64748b;
-  cursor: pointer;
-}
-
+/* NAVIGATION */
 .sidebar-nav {
   flex: 1;
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .nav-item {
@@ -68,300 +61,229 @@
   padding: 0.75rem 1rem;
   color: #64748b;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
-  transition: all 0.2s;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .nav-item:hover {
   background-color: #f1f5f9;
   color: #4f46e5;
+  padding-left: 1.25rem;
 }
 
 .nav-item.active {
   background-color: #eef2ff;
   color: #4f46e5;
+  font-weight: 600;
 }
 
-.sidebar-footer {
-  padding: 1rem;
-  border-top: 1px solid #f1f5f9;
-}
-
-/* MAIN CONTENT STYLES */
+/* ==========================================================================
+   MAIN CONTENT & NAVBAR
+   ========================================================================== */
 .main-content {
   flex: 1;
   margin-left: 260px;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* Mencegah overflow */
 }
 
 .navbar {
   height: 70px;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   position: sticky;
   top: 0;
   z-index: 900;
 }
 
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.menu-toggle {
-  display: none; /* Muncul di mobile */
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
 .navbar-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #475569;
 }
 
-/* PROFILE & DROPDOWN */
+/* ==========================================================================
+   USER PROFILE (POJOK KANAN ATAS)
+   ========================================================================== */
 .nav-right {
-  display: flex;
-  align-items: center;
-}
-
-.profile-wrapper {
   position: relative;
 }
 
-.profile-trigger {
+.user-profile {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  border-radius: 99px;
-  transition: background 0.2s;
+  gap: 12px;
+  cursor: pointer;
+  padding: 6px 6px 6px 14px; /* Padding kiri lebih besar untuk nama */
+  border-radius: 50px;
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  user-select: none;
 }
 
-.profile-trigger:hover {
-  background-color: #f1f5f9;
+.user-profile:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e1;
 }
 
-.profile-name {
-  font-size: 0.9rem;
-  font-weight: 500;
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: #1e293b;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.profile-avatar {
-  width: 35px;
-  height: 35px;
+/* AVATAR STYLE */
+.user-avatar {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.user-avatar img, 
+.user-avatar .initials {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e2e8f0;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.profile-initial {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background-color: #4f46e5;
+.user-avatar .initials {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
 }
 
-.profile-dropdown-box {
+/* POPUP DROPDOWN */
+.profile-popup {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 12px);
   right: 0;
   width: 220px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
-  padding: 1rem;
   z-index: 1000;
+  overflow: hidden;
+  transform-origin: top right;
+  animation: popIn 0.2s ease-out;
 }
 
-.profile-brief-info {
-  text-decoration: none;
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.popup-user-detail {
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.popup-user-detail strong {
   display: block;
-}
-
-.profile-brief-info p {
-  margin: 0;
+  font-size: 0.9rem;
   color: #1e293b;
+  line-height: 1.2;
 }
 
-.profile-brief-info .role-text {
-  font-size: 0.8rem;
+.popup-user-detail p {
+  font-size: 0.75rem;
   color: #64748b;
-  margin-bottom: 4px;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.logout-btn {
+.popup-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ef4444;
-  font-weight: 600;
-  font-size: 0.9rem;
-  background: none;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: #475569;
+  font-size: 0.875rem;
   border: none;
-  padding: 8px 0;
+  background: none;
   cursor: pointer;
-  width: 100%;
+  transition: background 0.2s;
 }
 
-.content-container {
-  padding: 2rem;
+.popup-item:hover {
+  background-color: #f1f5f9;
+  color: #4f46e5;
 }
 
-/* MOBILE RESPONSIVE */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-  .main-content {
-    margin-left: 0;
-  }
-  .menu-toggle, .close-menu {
-    display: block;
-  }
-  .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 999;
-  }
+.btn-keluar {
+  color: #ef4444 !important;
+  border-top: 1px solid #f1f5f9 !important;
+  font-weight: 600;
 }
-/* --- Penyesuaian Footer Sidebar --- */
 
+.btn-keluar:hover {
+  background-color: #fff1f2;
+}
+
+/* ==========================================================================
+   SIDEBAR FOOTER (LOGOUT)
+   ========================================================================== */
 .sidebar-footer {
-  padding: 1rem;
+  padding: 1.25rem;
   border-top: 1px solid #f1f5f9;
-  /* Tambahkan sedikit margin bawah agar tidak terlalu mepet dengan logo N */
-  padding-bottom: 1.5rem; 
-}
-
-.logout-container {
-  display: flex;
-  justify-content: flex-end; /* Mendorong tombol "Keluar" ke kanan */
-  width: 100%;
 }
 
 .logout-btn-sidebar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  color: #ef4444; /* Warna merah */
+  color: #ef4444;
   font-weight: 600;
   font-size: 0.9rem;
-  background: #fee2e2; /* Background merah muda agar lebih terlihat */
-  border: none;
-  padding: 8px 14px;
+  background: #fff1f2;
+  border: 1px solid #fecaca;
+  padding: 0.6rem 1rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .logout-btn-sidebar:hover {
-  background-color: #fca5a5;
-  transform: translateX(2px); /* Sedikit efek geser saat hover */
+  background-color: #ef4444;
+  color: white;
 }
 
-.user-profile {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 99px;
-  transition: background-color 0.2s ease;
-}
-
-.user-profile:hover {
-  background-color: rgba(0, 0, 0, 0.05); /* Warna abu-abu transparan di belakang nama dan PP */
-}
-
-/* Kotak Pop-up yang melayang */
-.profile-popup {
-  position: absolute;
-  top: 50px;
-  right: 0;
-  width: 180px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #eee;
-  z-index: 999;
-  overflow: hidden;
-}
-
-.popup-user-detail {
-  padding: 12px 15px;
-}
-
-.popup-user-detail strong {
-  display: block;
-  font-size: 14px;
-  color: #333;
-}
-
-.popup-user-detail p {
-  font-size: 12px;
-  color: #777;
-  margin: 0;
-}
-
-.popup-body hr {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 0;
-}
-
-/* Item di dalam pop-up */
-.popup-item {
-  display: block;
-  width: 100%;
-  padding: 10px 15px;
-  text-align: left;
-  text-decoration: none;
-  color: #333;
-  font-size: 13px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.popup-item:hover {
-  background-color: #f8fafc;
-  color: #04393e;
-}
-
-.btn-keluar {
-  color: #ef4444 !important;
-  border-top: 1px solid #eee;
-}
-
-/* Pastikan foto profil di header bulat sempurna */
-.user-avatar img, .user-avatar .initials {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  object-fit: cover;
+/* ==========================================================================
+   MOBILE RESPONSIVE
+   ========================================================================== */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .menu-toggle, .close-menu { display: block; }
+  
+  .navbar { padding: 0 1rem; }
+  .user-name { display: none; } /* Sembunyikan nama di mobile, sisakan avatar */
+  .user-profile { padding: 4px; }
 }

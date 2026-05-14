@@ -155,7 +155,7 @@ export default function DaftarSesi() {
   return (
     <div className="container">
       <div className="header-page">
-        <h2><b>Daftar Sesi Pembelajaran</b></h2>
+        <h2 className="section-heading"><b>Daftar Sesi Pembelajaran</b></h2>
         <button className="btn-add" onClick={() => { resetForm(); setShowModal(true); }}>+ Tambah Sesi</button>
       </div>
 

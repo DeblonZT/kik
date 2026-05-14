@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { 
   FiMenu, FiX, FiHome, FiList, FiCheckSquare, 
-  FiLogOut, FiBarChart2, FiUser, FiBookOpen 
+  FiLogOut, FiBarChart2, FiUser, FiBookOpen, FiBook
 } from 'react-icons/fi';
 import './dashboard_shared.css'; 
 
@@ -102,7 +102,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard_g" className={`nav-item ${pathname === '/dashboard_g' ? 'active' : ''}`} onClick={closeSidebar}>
             <FiHome /> Dashboard Guru
           </Link>
-          
+           <Link href="/dashboard_g/mapel" className={`nav-item ${pathname.includes('mapel') ? 'active' : ''}`} onClick={closeSidebar}>
+            <FiBook /> Mata Pelajaran 
+          </Link>
           <Link href="/dashboard_g/daftarKelas" className={`nav-item ${pathname.includes('daftarKelas') ? 'active' : ''}`} onClick={closeSidebar}>
             <FiList /> Daftar Sesi
           </Link>
@@ -182,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       
                       {/* LINK MENU PROFILE YANG KAMU MINTA */}
                       <Link href="/dashboard_g/profile" className="popup-item" onClick={() => setShowPopup(false)}>
-                         👤 Edit Profil
+                         👤 Profil
                       </Link>
                       
                       <button onClick={handleLogout} className="popup-item btn-keluar">

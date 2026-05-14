@@ -7,7 +7,13 @@
   background-color: #f8fafc;
   min-height: 100vh;
 }
-
+.section-heading {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 2rem;
+  text-align: center;
+}
 /* Header Halaman (Judul & Tombol Tambah) */
 .header-page {
   display: flex;

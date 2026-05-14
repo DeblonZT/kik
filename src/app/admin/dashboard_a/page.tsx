@@ -35,16 +35,23 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     const tableName = role === 'guru' ? 'guru' : 'walas';
     try {
-      // Mengambil semua data termasuk kolom foto_url
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('*')
-        .order('nama', { ascending: true });
+      let query = supabase.from(tableName).select('*');
+      const { data, error } = await query.order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setDataList(data || []);
+      if (error) {
+        const { data: dataFallback, error: errorFallback } = await supabase
+          .from(tableName)
+          .select('*');
+
+        if (errorFallback) {
+          setDataList([]);
+        } else {
+          setDataList(dataFallback || []);
+        }
+      } else {
+        setDataList(data || []);
+      }
     } catch (err: any) {
-      console.error("Fetch Error:", err.message);
       setDataList([]);
     }
   };
@@ -55,6 +62,14 @@ export default function AdminDashboard() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const getInitials = (nama: string) => {
+    return nama
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 2);
   };
 
   const handleEditClick = (item: any) => {
@@ -76,7 +91,7 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Hapus akun ini? Data terkait juga akan hilang.')) return;
+    if (!confirm('Apakah Anda yakin? Data di tabel Sesi yang terkait juga akan terhapus.')) return;
     const tableName = role === 'guru' ? 'guru' : 'walas';
     const idColumn = role === 'guru' ? 'guruId' : 'walasId';
 
@@ -101,6 +116,7 @@ export default function AdminDashboard() {
     const tableName = role === 'guru' ? 'guru' : 'walas';
     const idColumn = role === 'guru' ? 'guruId' : 'walasId';
 
+    // Filter data agar tidak mengirim kolom yang tidak ada
     const dataToUpdate: any = {
       nama: formData.nama,
       nip: formData.nip,
@@ -119,11 +135,12 @@ export default function AdminDashboard() {
         .eq(idColumn, editingId);
 
       if (error) throw error;
-      setMessage({ text: `Berhasil update ${role}`, type: 'success' });
+
+      setMessage({ text: `Berhasil mengupdate ${role}`, type: 'success' });
       handleCloseEdit();
       fetchData();
     } catch (err: any) {
-      setMessage({ text: 'Gagal update: ' + err.message, type: 'error' });
+      setMessage({ text: 'Gagal mengupdate: ' + err.message, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -132,16 +149,19 @@ export default function AdminDashboard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setMessage({ text: '', type: '' });
+
     const tableName = role === 'guru' ? 'guru' : 'walas';
 
+    // 1. Buat objek data dasar yang ada di kedua tabel
     const dataToInsert: any = {
       nama: formData.nama,
       nip: formData.nip,
       email: formData.email,
       pw: formData.pw,
-      foto_url: 'EMPTY' // Default value sesuai screenshot database
     };
 
+    // 2. HANYA tambahkan kelasId jika role-nya adalah walas
     if (role === 'walas') {
       dataToInsert.kelasId = parseInt(formData.kelasId);
     }
@@ -154,6 +174,7 @@ export default function AdminDashboard() {
       setFormData({ nama: '', nip: '', email: '', pw: '', kelasId: '' });
       fetchData();
     } catch (err: any) {
+      // Error "Could not find kelasId" tidak akan muncul lagi di sini
       setMessage({ text: 'Gagal: ' + err.message, type: 'error' });
     } finally {
       setLoading(false);
@@ -162,40 +183,63 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.container}>
+      {/* TOP BAR — di luar card */}
       <div className={styles.topBar}>
         <div className={styles.topBarTitle}>
           <span className={styles.topBarBadge}>Admin Portal</span>
           <h1 className={styles.topBarHeading}>Manajemen Akun</h1>
           <p className={styles.topBarSub}>SMK Negeri 1 Cibinong</p>
         </div>
-        <button onClick={handleLogout} className={styles.logoutBtn}>⎋ Logout</button>
+        <button onClick={handleLogout} className={styles.logoutBtn}>
+          ⎋ Logout
+        </button>
       </div>
 
       <div className={styles.card}>
         <div className={styles.tabSelector}>
-          <button className={role === 'guru' ? styles.activeTab : ''} onClick={() => setRole('guru')}>Guru Produktif</button>
-          <button className={role === 'walas' ? styles.activeTab : ''} onClick={() => setRole('walas')}>Wali Kelas</button>
+          <button className={role === 'guru' ? styles.activeTab : ''} onClick={() => setRole('guru')}>
+            Guru Produktif
+          </button>
+          <button className={role === 'walas' ? styles.activeTab : ''} onClick={() => setRole('walas')}>
+            Wali Kelas
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <h3 className={styles.formTitle}>Tambah Akun {role === 'guru' ? 'Guru' : 'Walas'}</h3>
           <div className={styles.grid}>
-            <div className={styles.inputGroup}><label>Nama Lengkap</label><input name="nama" value={formData.nama} onChange={handleChange} required /></div>
-            <div className={styles.inputGroup}><label>NIP</label><input name="nip" value={formData.nip} onChange={handleChange} required /></div>
-            <div className={styles.inputGroup}><label>Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div>
-            <div className={styles.inputGroup}><label>Password</label><input type="password" name="pw" value={formData.pw} onChange={handleChange} required /></div>
+            <div className={styles.inputGroup}>
+              <label>Nama Lengkap</label>
+              <input name="nama" value={formData.nama} onChange={handleChange} required />
+            </div>
+            <div className={styles.inputGroup}>
+              <label>NIP</label>
+              <input name="nip" value={formData.nip} onChange={handleChange} required />
+            </div>
+            <div className={styles.inputGroup}>
+              <label>Email</label>
+              <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+            </div>
+            <div className={styles.inputGroup}>
+              <label>Password</label>
+              <input type="password" name="pw" value={formData.pw} onChange={handleChange} required />
+            </div>
             {role === 'walas' && (
               <div className={styles.inputGroup}>
                 <label>Pilih Kelas</label>
                 <select name="kelasId" value={formData.kelasId} onChange={handleChange as any} required className={styles.selectInput}>
                   <option value="">-- Pilih Kelas --</option>
-                  <option value="1">10 TKP 1</option><option value="2">10 TKP 2</option>
-                  <option value="3">11 TKP 1</option><option value="4">11 TKP 2</option>
+                  <option value="1">10 TKP 1</option>
+                  <option value="2">10 TKP 2</option>
+                  <option value="3">11 TKP 1</option>
+                  <option value="4">11 TKP 2</option>
                 </select>
               </div>
             )}
           </div>
-          <button type="submit" className={styles.saveButton} disabled={loading}>{loading ? 'Memproses...' : 'Simpan Akun'}</button>
+          <button type="submit" className={styles.saveButton} disabled={loading}>
+            {loading ? 'Memproses...' : 'Simpan Akun'}
+          </button>
           {message.text && <p className={message.type === 'success' ? styles.successMsg : styles.errorMsg}>{message.text}</p>}
         </form>
 
@@ -206,76 +250,99 @@ export default function AdminDashboard() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>PP</th>
+                <th>Foto</th>
                 <th>Nama</th>
                 <th>NIP</th>
-                <th>Kredensial</th>
-                {role === 'walas' && <th>Kelas</th>}
+                <th>Email</th>
+                {role === 'walas' && <th>ID Kelas</th>}
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {dataList.length > 0 ? (
-                dataList.map((item) => (
-                  <tr key={item.guruId || item.walasId}>
-                    <td>
-                      <div className={styles.ppCircle}>
-                        {/* LOGIKA FOTO PROFILE: Cek foto_url */}
-                        {item.foto_url && item.foto_url !== 'EMPTY' ? (
-                          <img src={item.foto_url} alt="Profile" className={styles.ppImage} />
-                        ) : (
-                          <div className={styles.ppFallback}>
-                            {item.nama?.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className={styles.boldText}>{item.nama}</td>
-                    <td>{item.nip}</td>
-                    <td>
-                        <div className={styles.subInfo}>{item.email}</div>
-                        <div className={styles.subInfo}>PW: {item.pw}</div>
-                    </td>
-                    {role === 'walas' && <td><span className={styles.kelasBadge}>{item.kelasId}</span></td>}
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={styles.editBtn} onClick={() => handleEditClick(item)}>Edit</button>
-                        <button className={styles.deleteBtn} onClick={() => handleDelete(role === 'guru' ? item.guruId : item.walasId)}>Hapus</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                dataList.map((item, index) => {
+                  const dbId = role === 'guru' ? item.guruId : item.walasId;
+                  const uniqueKey = dbId ?? `row-${role}-${index}`;
+
+                  return (
+                    <tr key={uniqueKey}>
+                      <td>
+                        <div className={styles.avatarInitials}>{getInitials(item.nama || 'User')}</div>
+                      </td>
+                      <td>{item.nama}</td>
+                      <td>{item.nip}</td>
+                      <td>{item.email}</td>
+                      {role === 'walas' && <td>{item.kelasId}</td>}
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button className={styles.editBtn} onClick={() => handleEditClick(item)}>Edit</button>
+                          <button className={styles.deleteBtn} onClick={() => handleDelete(dbId)}>Hapus</button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
-                <tr><td colSpan={6} className={styles.emptyRow}>Belum ada data.</td></tr>
+                <tr key="empty-row">
+                  <td colSpan={role === 'walas' ? 5 : 4} className={styles.emptyRow}>Belum ada data.</td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* MODAL EDIT (Tetap Ada) */}
-      {showEditModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3>Edit Akun {role.toUpperCase()}</h3>
-              <button className={styles.closeBtn} onClick={handleCloseEdit}>✕</button>
-            </div>
-            <form onSubmit={handleUpdate} className={styles.form}>
+        {showEditModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <div className={styles.modalHeader}>
+                <h3>Edit Akun {role === 'guru' ? 'Guru' : 'Walas'}</h3>
+                <button className={styles.closeBtn} onClick={handleCloseEdit}>✕</button>
+              </div>
+              <form onSubmit={handleUpdate} className={styles.form}>
                 <div className={styles.grid}>
-                    <div className={styles.inputGroup}><label>Nama</label><input name="nama" value={formData.nama} onChange={handleChange} required /></div>
-                    <div className={styles.inputGroup}><label>NIP</label><input name="nip" value={formData.nip} onChange={handleChange} required /></div>
-                    <div className={styles.inputGroup}><label>Email</label><input name="email" value={formData.email} onChange={handleChange} required /></div>
-                    <div className={styles.inputGroup}><label>Password</label><input name="pw" value={formData.pw} onChange={handleChange} required /></div>
+                  <div className={styles.inputGroup}>
+                    <label>Nama Lengkap</label>
+                    <input name="nama" value={formData.nama} onChange={handleChange} required />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label>NIP</label>
+                    <input name="nip" value={formData.nip} onChange={handleChange} required />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label>Email</label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label>Password</label>
+                    <input type="password" name="pw" value={formData.pw} onChange={handleChange} required />
+                  </div>
+                  {role === 'walas' && (
+                    <div className={styles.inputGroup}>
+                      <label>Pilih Kelas</label>
+                      <select name="kelasId" value={formData.kelasId} onChange={handleChange as any} required className={styles.selectInput}>
+                        <option value="">-- Pilih Kelas --</option>
+                        <option value="1">X TKP 1</option>
+                        <option value="2">X TKP 2</option>
+                        <option value="3">XI TKP 1</option>
+                        <option value="4">XI TKP 2</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
                 <div className={styles.modalActions}>
-                    <button type="submit" className={styles.saveButton} disabled={loading}>Update</button>
-                    <button type="button" className={styles.cancelButton} onClick={handleCloseEdit}>Batal</button>
+                  <button type="submit" className={styles.saveButton} disabled={loading}>
+                    {loading ? 'Memproses...' : 'Simpan Perubahan'}
+                  </button>
+                  <button type="button" className={styles.cancelButton} onClick={handleCloseEdit}>
+                    Batal
+                  </button>
                 </div>
-            </form>
+              </form>
+              
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

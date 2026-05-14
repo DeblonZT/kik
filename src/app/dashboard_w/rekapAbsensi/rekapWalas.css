@@ -7,6 +7,14 @@
   margin-bottom: 1.5rem;
 }
 
+.section-heading {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .rekap-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
 .rekap-subtitle { color: #64748b; font-size: 0.9rem; }
 

@@ -98,7 +98,7 @@ export default function RekapAbsensiWalas() {
     <div className="rekap-container">
       <div className="rekap-header">
         <div className="title-area">
-          <h1 className="rekap-title">Monitoring Rekap</h1>
+          <h1 className="section-heading">Monitoring Rekap</h1>
           <p className="rekap-subtitle">Kelas: <strong>{walasData?.nama_kelas || '...'}</strong></p>
         </div>
         <button className="btn-export" onClick={() => window.print()}>
